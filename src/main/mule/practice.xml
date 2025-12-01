@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP_Listener_config" doc:id="e4eaa9ca-dfc4-404f-b4d5-41eaba1f079b">
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="100aad4b-ec4e-4b52-ac0b-011b442203e5" >
+		<http:request-connection host="localhost" port="8081" />
+	</http:request-config>
+	<vm:config name="VM_Config" doc:name="VM Config" doc:id="95a03e92-df68-4790-b1d6-d7ee3902a99f" >
+		<vm:connection />
+		<vm:queues >
+			<vm:queue queueName="pranjal" />
+			<vm:queue queueName="pranjal2" />
+		</vm:queues>
+	</vm:config>
+	<flow name="practiceFlow" doc:id="0e3ed038-3679-4631-8fff-6afd037ef14f" >
+		<http:listener doc:name="Listener" doc:id="7d25e092-0053-41eb-8866-aa47e5c0ecf9" config-ref="HTTP_Listener_config" path="/test" allowedMethods="POST"/>
+		<vm:publish queueName="pranjal" doc:name="jms1" doc:id="6a6b26b7-334b-4691-842d-d1f34af8881b" config-ref="VM_Config"/>
+		<http:request method="GET" doc:name="Request" doc:id="f8f75a81-2d6d-494e-907a-fc22dd9d0edd" config-ref="HTTP_Request_configuration" path="/test2"/>
+		<vm:publish-consume doc:name="jms2" doc:id="e72f3bfa-efdc-469e-ac91-9b6979b66a04" config-ref="VM_Config" queueName="pranjal"/>
+		<set-payload value='#[payload as String ++ " Three"]' doc:name='payload as String ++ " Three"' doc:id="ac2e24a9-d5cd-4ef2-ab95-52f567d7ea34" />
+	</flow>
+	<flow name="jms1" doc:id="8bfb779b-79f8-4b5f-875e-cd8b53fa7e03" >
+		<vm:listener queueName="pranjal" doc:name="Listener" doc:id="8efb988d-5fd2-4fa0-8d1a-b02e65c74f91" config-ref="VM_Config"/>
+		<logger level="INFO" doc:name="Logger" doc:id="98d1ffa0-074b-4d00-925c-a65f1cefb2c6" message="#[payload]"/>
+		<set-payload value='#[payload as String ++ "JMS1"]' doc:name='payload as String ++ "JMS1"' doc:id="bcff3fba-db15-4d14-93ae-b46b9b0160ed" />
+	</flow>
+	<flow name="jms2" doc:id="d2049f6b-9f90-4d27-a6d6-c4bf8d441c3e" >
+		<vm:listener doc:name="Listener" doc:id="b5faca59-6b19-42ef-8e2f-c25776364b04" config-ref="VM_Config" queueName="pranjal2"/>
+		<logger level="INFO" doc:name="Logger" doc:id="c1560986-3f20-4d14-be00-53a6fddff84a" />
+		<set-payload value='#[payload as String ++ "JMS2"]' doc:name='payload as String ++ "JMS2"' doc:id="5eac5ae1-3806-4ded-8ba4-d19af9c76d91" />
+	</flow>
+	<flow name="practiceFlow1" doc:id="4b551690-2210-43e2-a17b-b2fbb5ee578b" >
+		<http:listener doc:name="Listener" doc:id="e048f628-9bfd-46ba-b2a7-beb7395e29c2" config-ref="HTTP_Listener_config" path="/test2"/>
+		<set-payload value='#[{&#10;	"hi":"jijoid",&#10;	"jodx":"xjldi"&#10;}]' doc:name="Set Payload" doc:id="e8a5afc3-3d04-4bbb-a327-624b47b4b276" />
+	</flow>
+</mule>
